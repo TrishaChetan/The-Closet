@@ -1,0 +1,21 @@
+{
+  "name": "the-closet",
+  "version": "1.0.0",
+  "description": "The Closet — wardrobe cataloguer and outfit matcher. This package.json exists only to wrap the app with Capacitor for native Android/iOS builds; the web app itself needs no build step.",
+  "private": true,
+  "scripts": {
+    "cap:add:android": "npx cap add android",
+    "cap:add:ios": "npx cap add ios",
+    "cap:sync": "npx cap sync",
+    "cap:open:android": "npx cap open android",
+    "cap:open:ios": "npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.1.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2",
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/ios": "^6.1.2"
+  }
+}

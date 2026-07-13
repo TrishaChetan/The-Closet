@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#F7F3EC">
+<title>The Closet — Your Wardrobe, Catalogued</title>
+<meta name="description" content="Photograph, catalogue, and match your wardrobe. Works offline, keeps your photos on your device.">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ===================== HEADER / RIBBON NAV ===================== -->
+  <header class="site-header">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">⛁</span>
+      <h1>The Closet</h1>
+    </div>
+    <nav class="ribbon-nav" aria-label="Main">
+      <button class="ribbon-tab is-active" data-view="closet">Closet</button>
+      <button class="ribbon-tab" data-view="flip">Flip Through</button>
+      <button class="ribbon-tab" data-view="match">Match Me</button>
+      <button class="ribbon-tab" data-view="mannequin">Mannequin</button>
+      <button class="ribbon-tab" data-view="add">Add Item</button>
+      <button class="ribbon-tab" data-view="settings">Settings</button>
+    </nav>
+  </header>
+
+  <main id="views">
+
+    <!-- ===================== CLOSET GRID VIEW ===================== -->
+    <section id="view-closet" class="view is-active" aria-labelledby="closet-heading">
+      <div class="view-head">
+        <h2 id="closet-heading">Your Closet</h2>
+        <p class="view-sub" id="closet-count">Nothing catalogued yet — start by adding an item.</p>
+      </div>
+
+      <div class="category-rail" id="category-rail" role="tablist" aria-label="Filter by category">
+        <!-- populated by ui.js -->
+      </div>
+
+      <div class="closet-grid" id="closet-grid">
+        <!-- populated by ui.js -->
+      </div>
+    </section>
+
+    <!-- ===================== FLIP THROUGH VIEW ===================== -->
+    <section id="view-flip" class="view" aria-labelledby="flip-heading">
+      <div class="view-head">
+        <h2 id="flip-heading">Flip Through</h2>
+        <p class="view-sub">Pick a category, then flip card by card — like Cher's closet.</p>
+      </div>
+
+      <div class="category-rail" id="flip-category-rail" role="tablist" aria-label="Choose category to flip through"></div>
+
+      <div class="flip-stage" id="flip-stage">
+        <button class="flip-arrow flip-arrow--prev" id="flip-prev" aria-label="Previous item">‹</button>
+        <div class="index-card" id="flip-card">
+          <p class="index-card-empty">Choose a category above to start flipping.</p>
+        </div>
+        <button class="flip-arrow flip-arrow--next" id="flip-next" aria-label="Next item">›</button>
+      </div>
+      <p class="flip-position" id="flip-position"></p>
+    </section>
+
+    <!-- ===================== MATCH ME VIEW ===================== -->
+    <section id="view-match" class="view" aria-labelledby="match-heading">
+      <div class="view-head">
+        <h2 id="match-heading">Match Me</h2>
+        <p class="view-sub">Build an outfit around one piece, or let the closet compose a full look.</p>
+      </div>
+
+      <div class="match-mode-toggle" role="tablist" aria-label="Matching mode">
+        <button class="mode-btn is-active" data-mode="around-item">Build around an item</button>
+        <button class="mode-btn" data-mode="full-outfit">Full outfit for an occasion</button>
+        <button class="mode-btn" data-mode="surprise">Surprise me</button>
+      </div>
+
+      <!-- Build around item -->
+      <div class="match-panel is-active" id="panel-around-item">
+        <label class="field-label" for="anchor-select">Start with</label>
+        <select id="anchor-select" class="select-input">
+          <option value="">Choose a piece from your closet…</option>
+        </select>
+        <div class="style-profile-row">
+          <label class="field-label" for="profile-select-anchor">Style lens</label>
+          <select id="profile-select-anchor" class="select-input"></select>
+        </div>
+        <button class="btn-primary" id="btn-match-anchor">Find matches</button>
+        <div id="anchor-results" class="results-area"></div>
+      </div>
+
+      <!-- Full outfit -->
+      <div class="match-panel" id="panel-full-outfit">
+        <div class="form-grid">
+          <div>
+            <label class="field-label" for="occasion-select">Occasion</label>
+            <select id="occasion-select" class="select-input">
+              <option value="casual">Casual day</option>
+              <option value="work">Work / smart-casual</option>
+              <option value="formal">Formal / dressy</option>
+              <option value="date">Date night</option>
+              <option value="outdoor">Outdoor / active</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label" for="weather-select">Weather</label>
+            <select id="weather-select" class="select-input">
+              <option value="mild">Mild</option>
+              <option value="hot">Hot</option>
+              <option value="cold">Cold</option>
+              <option value="rainy">Rainy</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label" for="profile-select-full">Style lens</label>
+            <select id="profile-select-full" class="select-input"></select>
+          </div>
+        </div>
+        <button class="btn-primary" id="btn-match-full">Compose an outfit</button>
+        <div id="full-outfit-results" class="results-area"></div>
+      </div>
+
+      <!-- Surprise me -->
+      <div class="match-panel" id="panel-surprise">
+        <label class="field-label" for="profile-select-surprise">Style lens <span class="field-label-hint">(optional)</span></label>
+        <select id="profile-select-surprise" class="select-input">
+          <option value="">No particular theme — just surprise me</option>
+        </select>
+        <button class="btn-primary" id="btn-match-surprise">Give me a random outfit</button>
+        <div id="surprise-results" class="results-area"></div>
+      </div>
+    </section>
+
+    <!-- ===================== MANNEQUIN VIEW ===================== -->
+    <section id="view-mannequin" class="view" aria-labelledby="mannequin-heading">
+      <div class="view-head">
+        <h2 id="mannequin-heading">Mannequin</h2>
+        <p class="view-sub">A stylized figure, not a photo of you — set it up once, then preview any outfit on it from Match Me.</p>
+      </div>
+
+      <div class="mannequin-layout">
+        <div class="mannequin-controls">
+          <label class="field-label" for="mq-gender">Silhouette</label>
+          <select id="mq-gender" class="select-input">
+            <option value="feminine">Female</option>
+            <option value="masculine">Male</option>
+            <option value="unisex">Unisex / Neutral</option>
+          </select>
+
+          <label class="field-label" for="mq-height">Height <span class="field-label-hint">(cm, optional)</span></label>
+          <input type="number" id="mq-height" class="text-input" min="140" max="200" value="165">
+
+          <label class="field-label" for="mq-bust">Bust / Chest <span class="field-label-hint">(cm)</span></label>
+          <input type="number" id="mq-bust" class="text-input" min="70" max="135" value="90">
+
+          <label class="field-label" for="mq-waist">Waist <span class="field-label-hint">(cm)</span></label>
+          <input type="number" id="mq-waist" class="text-input" min="50" max="115" value="75">
+
+          <label class="field-label" for="mq-hip">Hip <span class="field-label-hint">(cm)</span></label>
+          <input type="number" id="mq-hip" class="text-input" min="75" max="140" value="95">
+
+          <label class="field-label" for="mq-thigh">Thigh <span class="field-label-hint">(cm)</span></label>
+          <input type="number" id="mq-thigh" class="text-input" min="35" max="75" value="52">
+
+          <label class="field-label" for="mq-butt">Hip / Glute depth <span class="field-label-hint">(cm)</span></label>
+          <input type="number" id="mq-butt" class="text-input" min="75" max="140" value="95">
+
+          <label class="field-label" for="mq-skin">Skin tone</label>
+          <input type="color" id="mq-skin" value="#C68863">
+
+          <label class="field-label" for="mq-eye-color">Eye colour</label>
+          <input type="color" id="mq-eye-color" value="#5B4636">
+
+          <label class="field-label" for="mq-hairstyle">Hairstyle</label>
+          <select id="mq-hairstyle" class="select-input">
+            <option value="buzzcut">Buzzcut</option>
+            <option value="undercut">Undercut</option>
+            <option value="short-crop">Short Crop</option>
+            <option value="bob">Bob</option>
+            <option value="long-straight">Long Straight</option>
+            <option value="wavy-shoulder" selected>Wavy, Shoulder-Length</option>
+            <option value="long-curly">Long Curly</option>
+            <option value="curly-afro">Curly Afro</option>
+            <option value="coily-afro">Coily Afro</option>
+            <option value="ponytail">Ponytail</option>
+            <option value="braids">Braids</option>
+            <option value="bun">Bun</option>
+          </select>
+
+          <label class="field-label" for="mq-hair-color">Hair colour</label>
+          <input type="color" id="mq-hair-color" value="#2B1B12">
+
+          <button class="btn-primary" id="btn-save-mannequin">Save mannequin</button>
+          <p class="settings-status" id="mannequin-status"></p>
+        </div>
+
+        <div class="mannequin-stage">
+          <div id="mannequin-svg-holder"></div>
+          <p class="view-sub" id="mannequin-outfit-label">No outfit selected — generate one in Match Me, then choose "Preview on mannequin."</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== ADD ITEM VIEW ===================== -->
+    <section id="view-add" class="view" aria-labelledby="add-heading">
+      <div class="view-head">
+        <h2 id="add-heading">Add an Item</h2>
+        <p class="view-sub">Photograph or upload a piece. Colour is detected automatically — you confirm the rest.</p>
+      </div>
+
+      <form id="add-item-form" class="add-form">
+        <div class="photo-drop" id="photo-drop">
+          <img id="photo-preview" alt="" hidden>
+          <div class="photo-drop-empty" id="photo-drop-empty">
+            <span class="photo-drop-icon" aria-hidden="true">📷</span>
+            <span>Your photo will appear here</span>
+          </div>
+        </div>
+        <div class="photo-btn-row">
+          <button type="button" class="btn-secondary" id="btn-take-photo">📷 Take Photo</button>
+          <button type="button" class="btn-secondary" id="btn-choose-photo">🖼️ Choose from Library</button>
+        </div>
+        <input type="file" id="photo-input-camera" accept="image/*" capture="environment" hidden>
+        <input type="file" id="photo-input-library" accept="image/*" hidden>
+
+        <div class="cutout-row" id="cutout-row" hidden>
+          <button type="button" class="btn-secondary" id="btn-remove-bg">✂️ Cut out background</button>
+          <button type="button" class="btn-secondary" id="btn-undo-bg" hidden>Undo cutout</button>
+          <p class="cutout-hint">Works best on plain backgrounds. If it looks off, try your phone's built-in cutout tool instead (iPhone: long-press the photo in your gallery; Android: open it in Google Photos) — then re-upload that version.</p>
+        </div>
+
+        <label class="field-label" for="item-name">Name</label>
+        <input type="text" id="item-name" class="text-input" placeholder="e.g. Navy cable-knit sweater" required>
+
+        <label class="field-label" for="item-category">Category</label>
+        <select id="item-category" class="select-input" required>
+          <option value="">Choose a category…</option>
+          <option value="tops">Tops / Shirts</option>
+          <option value="dresses-short">Short Dresses</option>
+          <option value="dresses-midi">Midi Dresses</option>
+          <option value="dresses-long">Long Dresses</option>
+          <option value="gowns">Gowns / Formal Dresses</option>
+          <option value="jumpsuits">Jumpsuits / Rompers</option>
+          <option value="blazers">Blazers</option>
+          <option value="jackets">Jackets / Coats</option>
+          <option value="hoodies">Hoodies / Sweaters</option>
+          <option value="skirts">Skirts</option>
+          <option value="jeans">Jeans</option>
+          <option value="shorts">Shorts</option>
+          <option value="pants">Pants / Trousers</option>
+          <option value="activewear">Activewear</option>
+          <option value="footwear">Footwear</option>
+          <option value="hats">Hats</option>
+          <option value="purses">Purses / Bags</option>
+          <option value="belts">Belts</option>
+          <option value="glasses">Glasses</option>
+          <option value="watch">Watches</option>
+          <option value="rings">Rings</option>
+          <option value="necklace">Necklaces</option>
+          <option value="earrings">Earrings</option>
+          <option value="scarves">Scarves</option>
+        </select>
+
+        <label class="field-label" for="item-formality">Formality</label>
+        <select id="item-formality" class="select-input">
+          <option value="casual">Casual</option>
+          <option value="smart-casual">Smart-casual</option>
+          <option value="formal">Formal</option>
+        </select>
+
+        <div class="detected-color-row">
+          <span class="field-label">Detected colour</span>
+          <div class="color-chip-row" id="detected-color-chip">
+            <span class="color-chip" id="color-chip-swatch"></span>
+            <span id="color-chip-label">Add a photo to detect colour</span>
+          </div>
+        </div>
+
+        <label class="field-label" for="item-tags">Tags <span class="field-label-hint">(comma separated, optional)</span></label>
+        <input type="text" id="item-tags" class="text-input" placeholder="e.g. plaid, wool, monogrammed">
+
+        <button type="submit" class="btn-primary">Add to closet</button>
+      </form>
+    </section>
+
+    <!-- ===================== SETTINGS VIEW ===================== -->
+    <section id="view-settings" class="view" aria-labelledby="settings-heading">
+      <div class="view-head">
+        <h2 id="settings-heading">Settings</h2>
+        <p class="view-sub">Your data stays on this device. Nothing here is ever uploaded anywhere.</p>
+      </div>
+
+      <div class="settings-card">
+        <h3>AI Stylist (optional)</h3>
+        <p>Turn this on to ask for freeform outfit ideas ("something for a rainy first date"). Requires your own Anthropic API key — it's stored only in this browser and used only to call Claude directly from your device.</p>
+        <label class="field-label" for="api-key-input">Anthropic API key</label>
+        <input type="password" id="api-key-input" class="text-input" placeholder="sk-ant-…">
+        <label class="toggle-row">
+          <input type="checkbox" id="ai-toggle">
+          <span>Enable AI Stylist</span>
+        </label>
+        <button class="btn-secondary" id="btn-save-settings">Save</button>
+        <p class="settings-status" id="settings-status"></p>
+      </div>
+
+      <div class="settings-card">
+        <h3>Backup your closet</h3>
+        <p>Export everything as a file you can keep, or move to another device.</p>
+        <button class="btn-secondary" id="btn-export">Export closet (.json)</button>
+        <label class="btn-secondary" for="import-input" style="cursor:pointer;">Import closet (.json)</label>
+        <input type="file" id="import-input" accept="application/json" hidden>
+      </div>
+
+      <div class="settings-card">
+        <h3>Danger zone</h3>
+        <p>Permanently erase every item in this closet, on this device.</p>
+        <button class="btn-danger" id="btn-clear-all">Clear entire closet</button>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <p>The Closet — an open-source wardrobe cataloguer. Your photos never leave this device.</p>
+  </footer>
+
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

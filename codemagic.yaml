@@ -1,0 +1,54 @@
+workflows:
+  android-apk:
+    name: The Closet — Android APK (debug, installable directly)
+    max_build_duration: 30
+    instance_type: linux
+    environment:
+      node: 20
+    scripts:
+      - name: Install npm dependencies
+        script: npm install
+      - name: Add Android platform (safe to re-run)
+        script: npx cap add android || true
+      - name: Sync web assets into the Android project
+        script: npx cap sync android
+      - name: Build debug APK
+        script: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+    artifacts:
+      - android/app/build/outputs/**/*.apk
+
+  # iOS builds are included for completeness, but note: Apple requires a paid
+  # Apple Developer Program membership (99 USD/year) to produce an IPA anyone
+  # can install without a Mac + Xcode + a 7-day free personal certificate.
+  # This applies no matter which build method is used — it's an Apple
+  # platform requirement, not a limitation of this project or Codemagic.
+  # Once you have a Developer account, set up code signing in the Codemagic
+  # dashboard (Team settings → Code signing) and this workflow will produce
+  # a real .ipa.
+  ios-ipa:
+    name: The Closet — iOS IPA (requires your own Apple Developer account)
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      node: 20
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.thecloset.app
+    scripts:
+      - name: Install npm dependencies
+        script: npm install
+      - name: Add iOS platform (safe to re-run)
+        script: npx cap add ios || true
+      - name: Sync web assets into the iOS project
+        script: npx cap sync ios
+      - name: Install CocoaPods
+        script: |
+          cd ios/App
+          pod install
+      - name: Build IPA
+        script: xcode-project build-ipa --workspace "ios/App/App.xcworkspace" --scheme "App"
+    artifacts:
+      - build/ios/ipa/*.ipa
