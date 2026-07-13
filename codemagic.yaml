@@ -8,6 +8,10 @@
     scripts:
       - name: Install npm dependencies
         script: npm install
+      - name: Prepare www folder for Capacitor
+        script: |
+          mkdir -p www
+          cp -r index.html css js manifest.json service-worker.js icons www/
       - name: Add Android platform (safe to re-run)
         script: npx cap add android || true
       - name: Sync web assets into the Android project
@@ -32,6 +36,10 @@
     scripts:
       - name: Install npm dependencies
         script: npm install
+      - name: Prepare www folder for Capacitor
+        script: |
+          mkdir -p www
+          cp -r index.html css js manifest.json service-worker.js icons www/
       - name: Add iOS platform (safe to re-run)
         script: npx cap add ios || true
       - name: Sync web assets into the iOS project
