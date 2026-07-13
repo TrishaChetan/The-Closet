@@ -1,8 +1,8 @@
-workflows:
+﻿workflows:
   android-apk:
     name: The Closet — Android APK (debug, installable directly)
     max_build_duration: 30
-    instance_type: linux_x2
+    instance_type: mac_mini_m2
     environment:
       node: 20
     scripts:
@@ -20,14 +20,6 @@ workflows:
     artifacts:
       - android/app/build/outputs/**/*.apk
 
-  # iOS builds are included for completeness, but note: Apple requires a paid
-  # Apple Developer Program membership (99 USD/year) to produce an IPA anyone
-  # can install without a Mac + Xcode + a 7-day free personal certificate.
-  # This applies no matter which build method is used — it's an Apple
-  # platform requirement, not a limitation of this project or Codemagic.
-  # Once you have a Developer account, set up code signing in the Codemagic
-  # dashboard (Team settings → Code signing) and this workflow will produce
-  # a real .ipa.
   ios-ipa:
     name: The Closet — iOS IPA (requires your own Apple Developer account)
     max_build_duration: 60
