@@ -233,9 +233,20 @@
         <input type="file" id="photo-input-library" accept="image/*" hidden>
 
         <div class="cutout-row" id="cutout-row" hidden>
-          <button type="button" class="btn-secondary" id="btn-remove-bg">✂️ Cut out background</button>
+          <button type="button" class="btn-secondary" id="btn-remove-bg">✂️ Cut out background (auto)</button>
+          <button type="button" class="btn-secondary" id="btn-manual-cutout">✏️ Trace it myself</button>
           <button type="button" class="btn-secondary" id="btn-undo-bg" hidden>Undo cutout</button>
-          <p class="cutout-hint">Works best on plain backgrounds. If it looks off, try your phone's built-in cutout tool instead (iPhone: long-press the photo in your gallery; Android: open it in Google Photos) — then re-upload that version.</p>
+          <p class="cutout-hint">Auto works best on plain backgrounds. "Trace it myself" lets you draw freehand around the item for any background — or use your phone's built-in cutout tool (iPhone: long-press the photo in your gallery; Android: open it in Google Photos) and re-upload that version.</p>
+        </div>
+
+        <div class="lasso-editor" id="lasso-editor" hidden>
+          <p class="cutout-hint">Trace around the item with your finger or mouse — any shape. Then tap Apply.</p>
+          <canvas id="lasso-canvas"></canvas>
+          <div class="lasso-toolbar">
+            <button type="button" class="btn-secondary" id="btn-lasso-reset">Reset line</button>
+            <button type="button" class="btn-primary" id="btn-lasso-apply">Apply cutout</button>
+            <button type="button" class="btn-secondary" id="btn-lasso-cancel">Cancel</button>
+          </div>
         </div>
 
         <label class="field-label" for="item-name">Name</label>

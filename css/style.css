@@ -414,6 +414,21 @@ main#views { flex: 1; padding: 1.25rem; max-width: 960px; width: 100%; margin: 0
 .cutout-row .btn-secondary { margin-right: 0.5rem; margin-top: 0.4rem; font-size: 0.85rem; }
 .cutout-hint { font-size: 0.75rem; color: var(--ink-soft); margin-top: 0.5rem; line-height: 1.4; }
 
+.lasso-editor { max-width: 320px; margin-top: 0.8rem; }
+.lasso-editor canvas {
+  width: 100%;
+  max-width: 300px;
+  aspect-ratio: 3/4;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  touch-action: none;
+  cursor: crosshair;
+  display: block;
+  background: #EFE8D8;
+}
+.lasso-toolbar { display: flex; gap: 0.5rem; margin-top: 0.6rem; flex-wrap: wrap; }
+.lasso-toolbar button { margin: 0; font-size: 0.85rem; padding: 0.5rem 0.8rem; }
+
 .detected-color-row { margin-top: 0.9rem; }
 .color-chip-row { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.3rem; }
 .color-chip {
