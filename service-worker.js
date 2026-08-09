@@ -11,6 +11,7 @@ const APP_SHELL = [
   './js/db.js',
   './js/colorDetect.js',
   './js/bgRemoval.js',
+  './js/manualCutout.js',
   './js/styleProfiles.js',
   './js/matcher.js',
   './js/mannequin.js',

@@ -3,6 +3,7 @@
 import { ClosetDB, makeId } from './db.js';
 import { detectDominantColor } from './colorDetect.js';
 import { removeBackground } from './bgRemoval.js';
+import { initLassoEditor } from './manualCutout.js';
 import { STYLE_PROFILES } from './styleProfiles.js';
 import { matchAroundItem, composeFullOutfit, randomOutfit } from './matcher.js';
 import { getFreeformOutfitIdea, summarizeClosetForPrompt } from './ai.js';
@@ -229,6 +230,52 @@ btnUndoBg.addEventListener('click', () => {
   btnUndoBg.hidden = true;
 });
 
+// ---------------- Manual lasso cutout ----------------
+const btnManualCutout = document.getElementById('btn-manual-cutout');
+const lassoEditor = document.getElementById('lasso-editor');
+const lassoCanvas = document.getElementById('lasso-canvas');
+const btnLassoReset = document.getElementById('btn-lasso-reset');
+const btnLassoApply = document.getElementById('btn-lasso-apply');
+const btnLassoCancel = document.getElementById('btn-lasso-cancel');
+let lassoController = null;
+
+btnManualCutout.addEventListener('click', () => {
+  if (!state.pendingPhoto) return;
+  const img = new Image();
+  img.onload = () => {
+    photoPreview.hidden = true;
+    cutoutRow.hidden = true;
+    lassoEditor.hidden = false;
+    lassoController?.destroy();
+    lassoController = initLassoEditor(lassoCanvas, img, (dataUrl) => {
+      state.pendingPhoto.dataUrl = dataUrl;
+      photoPreview.src = dataUrl;
+      photoPreview.hidden = false;
+      cutoutRow.hidden = false;
+      lassoEditor.hidden = true;
+      btnUndoBg.hidden = false;
+    });
+  };
+  // Trace from whatever's currently shown (original, or already auto-cut version)
+  img.src = state.pendingPhoto.dataUrl;
+});
+
+btnLassoReset.addEventListener('click', () => lassoController?.reset());
+
+btnLassoApply.addEventListener('click', () => {
+  if (!lassoController?.hasShape()) {
+    alert('Trace a closed shape around the item first — you need at least a few points.');
+    return;
+  }
+  lassoController.apply();
+});
+
+btnLassoCancel.addEventListener('click', () => {
+  lassoEditor.hidden = true;
+  photoPreview.hidden = false;
+  cutoutRow.hidden = false;
+});
+
 function fileToDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -268,6 +315,7 @@ document.getElementById('add-item-form').addEventListener('submit', async (e) =>
   photoDropEmpty.hidden = false;
   cutoutRow.hidden = true;
   btnUndoBg.hidden = true;
+  lassoEditor.hidden = true;
   colorSwatch.style.background = '#EFE8D8';
   colorLabel.textContent = 'Add a photo to detect colour';
   state.pendingPhoto = null;
