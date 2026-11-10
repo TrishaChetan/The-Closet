@@ -16,6 +16,8 @@ If you own a lot of clothes, it's easy to forget half of what's in your closet �
 - ✂️ **Background cutout** — after adding a photo, tap "Cut out background" for a free, local (no upload, no AI) chroma-key style removal. Works best on plain backgrounds; for trickier ones, use your phone's built-in subject-lift tool (iPhone: long-press the photo; Android: open in Google Photos) and re-upload that version instead.
 - 🔲 **Grid browser** — see your whole closet, filterable by category
 - 🎴 **Flip-through mode** — click through items one at a time, index-card style
+- 👗 **Wear tracking** — tap *I wore this today* on any suggested outfit; each item shows how often and how recently you wore it
+- 💤 **Forgotten filter** — surfaces pieces you haven't worn in 30+ days (or ever), so nothing gets lost at the back of the closet
 - 🎯 **Match Me**, three ways:
   - *Build around an item* — pick one piece, get the best match from every other category
   - *Full outfit* — pick an occasion + weather, get a complete look

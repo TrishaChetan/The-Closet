@@ -526,3 +526,13 @@ main#views { flex: 1; padding: 1.25rem; max-width: 960px; width: 100%; margin: 0
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+
+/* ---- wear tracking ---- */
+.closet-card-wear {
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+  margin-top: 0.25rem;
+}
+.closet-card-wear.is-forgotten {
+  color: #b5651d;
+}

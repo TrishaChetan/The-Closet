@@ -27,11 +27,20 @@ export const CATEGORIES = [
   { id: 'scarves', label: 'Scarves' }
 ];
 
-export function renderCategoryRail(container, activeId, onSelect) {
+export const FORGOTTEN_DAYS = 30;
+
+export function renderCategoryRail(container, activeId, onSelect, { showForgotten = false } = {}) {
   container.innerHTML = '';
   const allChip = makeChip('all', 'All', activeId === 'all');
   allChip.addEventListener('click', () => onSelect('all'));
   container.appendChild(allChip);
+
+  if (showForgotten) {
+    const forgotChip = makeChip('forgotten', '💤 Forgotten', activeId === 'forgotten');
+    forgotChip.title = `Items you haven't worn in ${FORGOTTEN_DAYS}+ days (or never)`;
+    forgotChip.addEventListener('click', () => onSelect('forgotten'));
+    container.appendChild(forgotChip);
+  }
 
   for (const cat of CATEGORIES) {
     const chip = makeChip(cat.id, cat.label, activeId === cat.id);
@@ -48,6 +57,24 @@ function makeChip(id, label, isActive) {
   btn.setAttribute('role', 'tab');
   btn.setAttribute('aria-selected', String(isActive));
   return btn;
+}
+
+// ---- wear tracking helpers ----
+export function daysSince(isoDate) {
+  if (!isoDate) return Infinity;
+  return Math.floor((Date.now() - new Date(isoDate).getTime()) / 86400000);
+}
+
+export function isForgotten(item) {
+  return daysSince(item.lastWorn) >= FORGOTTEN_DAYS;
+}
+
+export function wearSummary(item) {
+  const count = item.wearCount || 0;
+  if (!count) return 'Never worn';
+  const d = daysSince(item.lastWorn);
+  const when = d === 0 ? 'today' : d === 1 ? 'yesterday' : `${d} days ago`;
+  return `Worn ${count}× · last ${when}`;
 }
 
 export function categoryLabel(id) {
@@ -103,6 +130,7 @@ function makeClosetCard(item, onDelete) {
       <span class="closet-card-swatch" style="background:${item.color?.hex || '#EFE8D8'}"></span>
       <span>${escapeHtml(item.color?.name || 'Unknown')} · ${categoryLabel(item.category)}</span>
     </div>
+    <div class="closet-card-wear${isForgotten(item) ? ' is-forgotten' : ''}">${wearSummary(item)}</div>
   `;
   card.appendChild(photo);
   card.appendChild(body);
@@ -136,6 +164,7 @@ export function renderFlipCard(container, positionEl, item, index, total, onDele
     <h4>${escapeHtml(item.name)}</h4>
     <p style="margin:0;color:var(--ink-soft);font-size:0.85rem;">${escapeHtml(item.color?.name || 'Unknown colour')}</p>
     <span class="index-card-tag">${categoryLabel(item.category)}</span>
+    <p class="closet-card-wear${isForgotten(item) ? ' is-forgotten' : ''}">${wearSummary(item)}</p>
     ${item.tags && item.tags.length ? `<div style="margin-top:0.5rem;">${item.tags.map(t => `<span class="index-card-tag" style="margin-right:0.3rem;">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
   `;
   container.appendChild(photo);
@@ -143,7 +172,7 @@ export function renderFlipCard(container, positionEl, item, index, total, onDele
   positionEl.textContent = `${index + 1} of ${total}`;
 }
 
-export function renderOutfitResult(container, result, kind, onPreviewMannequin) {
+export function renderOutfitResult(container, result, kind, onPreviewMannequin, onWear) {
   container.innerHTML = '';
   if (!result || (!result.picks || result.picks.length === 0)) {
     const p = document.createElement('p');
@@ -184,6 +213,21 @@ export function renderOutfitResult(container, result, kind, onPreviewMannequin) 
     btn.textContent = 'Preview on mannequin';
     btn.addEventListener('click', () => onPreviewMannequin(result, kind));
     card.appendChild(btn);
+  }
+
+  if (onWear) {
+    const wearBtn = document.createElement('button');
+    wearBtn.className = 'btn-secondary';
+    wearBtn.style.marginTop = '0.75rem';
+    wearBtn.style.marginLeft = '0.5rem';
+    wearBtn.textContent = '👗 I wore this today';
+    wearBtn.addEventListener('click', async () => {
+      wearBtn.disabled = true;
+      const pieces = Object.values(outfitResultToCategoryMap(result, kind));
+      await onWear(pieces);
+      wearBtn.textContent = `✓ Logged ${pieces.length} piece${pieces.length === 1 ? '' : 's'}`;
+    });
+    card.appendChild(wearBtn);
   }
 
   container.appendChild(card);

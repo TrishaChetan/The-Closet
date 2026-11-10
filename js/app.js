@@ -61,10 +61,17 @@ function renderClosetView() {
   UI.renderCategoryRail(rail, state.closetFilter, (catId) => {
     state.closetFilter = catId;
     renderClosetView();
-  });
-  const filtered = state.closetFilter === 'all'
-    ? state.items
-    : state.items.filter((i) => i.category === state.closetFilter);
+  }, { showForgotten: true });
+  let filtered;
+  if (state.closetFilter === 'all') {
+    filtered = state.items;
+  } else if (state.closetFilter === 'forgotten') {
+    // longest-unworn first, never-worn at the top
+    filtered = state.items.filter(UI.isForgotten)
+      .sort((a, b) => UI.daysSince(b.lastWorn) - UI.daysSince(a.lastWorn));
+  } else {
+    filtered = state.items.filter((i) => i.category === state.closetFilter);
+  }
   UI.renderClosetGrid(document.getElementById('closet-grid'), filtered, document.getElementById('closet-count'), deleteItemEverywhere);
 }
 
@@ -133,6 +140,20 @@ function refreshMatchSelectors() {
     STYLE_PROFILES.map((p) => `<option value="${p.id}">${UI.escapeHtml(p.label)}</option>`).join('');
 }
 
+// Log that a set of pieces was worn today (one wear per item per day)
+async function logWear(pieces) {
+  const today = new Date().toISOString().slice(0, 10);
+  for (const piece of pieces) {
+    const item = state.items.find((i) => i.id === piece.id);
+    if (!item || item.lastWorn === today) continue;
+    item.wearCount = (item.wearCount || 0) + 1;
+    item.lastWorn = today;
+    await ClosetDB.updateItem(item);
+  }
+  renderClosetView();
+  renderFlipCard();
+}
+
 function goPreviewOnMannequin(result, kind) {
   const map = UI.outfitResultToCategoryMap(result, kind);
   state.mannequinOutfit = map;
@@ -149,7 +170,7 @@ document.getElementById('btn-match-anchor').addEventListener('click', () => {
   }
   const profileId = document.getElementById('profile-select-anchor').value;
   const result = matchAroundItem(anchor, state.items, profileId);
-  UI.renderOutfitResult(resultsEl, result, 'anchor', goPreviewOnMannequin);
+  UI.renderOutfitResult(resultsEl, result, 'anchor', goPreviewOnMannequin, logWear);
 });
 
 document.getElementById('btn-match-full').addEventListener('click', () => {
@@ -158,14 +179,14 @@ document.getElementById('btn-match-full').addEventListener('click', () => {
   const profileId = document.getElementById('profile-select-full').value;
   const resultsEl = document.getElementById('full-outfit-results');
   const result = composeFullOutfit(state.items, { occasion, weather, profileId });
-  UI.renderOutfitResult(resultsEl, result, 'full', goPreviewOnMannequin);
+  UI.renderOutfitResult(resultsEl, result, 'full', goPreviewOnMannequin, logWear);
 });
 
 document.getElementById('btn-match-surprise').addEventListener('click', () => {
   const profileId = document.getElementById('profile-select-surprise').value;
   const resultsEl = document.getElementById('surprise-results');
   const result = randomOutfit(state.items, { profileId: profileId || null });
-  UI.renderOutfitResult(resultsEl, result, 'surprise', goPreviewOnMannequin);
+  UI.renderOutfitResult(resultsEl, result, 'surprise', goPreviewOnMannequin, logWear);
 });
 
 // ---------------- Add item view ----------------
