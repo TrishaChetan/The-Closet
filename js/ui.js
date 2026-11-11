@@ -258,3 +258,73 @@ export function outfitResultToCategoryMap(result, kind) {
   }
   return map;
 }
+
+
+// ---- closet insights ----
+export function computeInsights(items) {
+  const total = items.length;
+  const wears = items.reduce((s, i) => s + (i.wearCount || 0), 0);
+  const never = items.filter((i) => !i.wearCount).length;
+  const recent = items.filter((i) => daysSince(i.lastWorn) < 30).length;
+  const mostWorn = items.filter((i) => i.wearCount)
+    .sort((a, b) => b.wearCount - a.wearCount || daysSince(a.lastWorn) - daysSince(b.lastWorn))
+    .slice(0, 3);
+
+  const colors = new Map();
+  for (const i of items) {
+    const name = i.color?.name || 'Unknown';
+    const entry = colors.get(name) || { name, hex: i.color?.hex || '#ccc', count: 0 };
+    entry.count += 1;
+    colors.set(name, entry);
+  }
+  const palette = [...colors.values()].sort((a, b) => b.count - a.count);
+
+  // category with the largest share of forgotten pieces (needs 2+ items to count)
+  let neglected = null;
+  for (const cat of CATEGORIES) {
+    const inCat = items.filter((i) => i.category === cat.id);
+    if (inCat.length < 2) continue;
+    const share = inCat.filter(isForgotten).length / inCat.length;
+    if (share > 0 && (!neglected || share > neglected.share)) {
+      neglected = { label: cat.label, share, count: inCat.length };
+    }
+  }
+  return { total, wears, never, recent, mostWorn, palette, neglected };
+}
+
+export function renderInsights(details, body, items) {
+  details.hidden = items.length === 0;
+  if (!items.length) return;
+  const s = computeInsights(items);
+  const pct = (n) => Math.round((n / s.total) * 100);
+  const top = s.palette.slice(0, 6);
+  const other = s.palette.slice(6).reduce((n, c) => n + c.count, 0);
+
+  body.innerHTML = `
+    <div class="insight-tiles">
+      <div class="insight-tile"><span class="insight-num">${s.total}</span><span>pieces</span></div>
+      <div class="insight-tile"><span class="insight-num">${s.wears}</span><span>wears logged</span></div>
+      <div class="insight-tile"><span class="insight-num">${pct(s.recent)}%</span><span>worn in the last 30 days</span></div>
+      <div class="insight-tile${s.never ? ' is-warn' : ''}"><span class="insight-num">${pct(s.never)}%</span><span>never worn</span></div>
+    </div>
+    <div class="insight-section">
+      <h4>Colour palette</h4>
+      <div class="palette-bar" role="img" aria-label="Colour distribution of your closet">
+        ${top.map((c) => `<span style="flex:${c.count};background:${escapeHtml(c.hex)}" title="${escapeHtml(c.name)}: ${c.count}"></span>`).join('')}
+        ${other ? `<span style="flex:${other};background:#bbb" title="Other: ${other}"></span>` : ''}
+      </div>
+      <ul class="palette-legend">
+        ${top.map((c) => `<li><i style="background:${escapeHtml(c.hex)}"></i>${escapeHtml(c.name)} <b>${c.count}</b></li>`).join('')}
+        ${other ? `<li><i style="background:#bbb"></i>Other <b>${other}</b></li>` : ''}
+      </ul>
+    </div>
+    <div class="insight-section">
+      <h4>Most worn</h4>
+      ${s.mostWorn.length
+        ? `<ol class="insight-list">${s.mostWorn.map((i) => `<li>${escapeHtml(i.name || 'Untitled')} <span>${i.wearCount}×</span></li>`).join('')}</ol>`
+        : '<p class="insight-empty">Nothing logged yet — tap “I wore this today” on an outfit in Match Me.</p>'}
+    </div>
+    ${s.neglected ? `<p class="insight-tip">💤 <b>${escapeHtml(s.neglected.label)}</b> is your most neglected category —
+      ${Math.round(s.neglected.share * 100)}% of its ${s.neglected.count} pieces haven't been worn in ${FORGOTTEN_DAYS}+ days.</p>` : ''}
+  `;
+}

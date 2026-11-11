@@ -73,6 +73,7 @@ function renderClosetView() {
     filtered = state.items.filter((i) => i.category === state.closetFilter);
   }
   UI.renderClosetGrid(document.getElementById('closet-grid'), filtered, document.getElementById('closet-count'), deleteItemEverywhere);
+  UI.renderInsights(document.getElementById('closet-insights'), document.getElementById('insights-body'), state.items);
 }
 
 // ---------------- Flip-through view ----------------

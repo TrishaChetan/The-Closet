@@ -17,6 +17,7 @@ If you own a lot of clothes, it's easy to forget half of what's in your closet �
 - 🔲 **Grid browser** — see your whole closet, filterable by category
 - 🎴 **Flip-through mode** — click through items one at a time, index-card style
 - 👗 **Wear tracking** — tap *I wore this today* on any suggested outfit; each item shows how often and how recently you wore it
+- 📊 **Closet insights** — wardrobe size, how much you actually wear, your most-worn pieces, a colour-palette breakdown and your most neglected category
 - 💤 **Forgotten filter** — surfaces pieces you haven't worn in 30+ days (or ever), so nothing gets lost at the back of the closet
 - 🎯 **Match Me**, three ways:
   - *Build around an item* — pick one piece, get the best match from every other category
