@@ -1,7 +1,7 @@
 // service-worker.js — minimal offline cache so the app opens without a connection.
 // Photos/data themselves live in IndexedDB, not the cache — this just caches the app shell.
 
-const CACHE_NAME = 'closet-app-shell-v3';
+const CACHE_NAME = 'closet-app-shell-v4';
 const APP_SHELL = [
   './',
   './index.html',

@@ -12,6 +12,7 @@ import * as UI from './ui.js';
 
 const state = {
   items: [],
+  lookbook: [],
   closetFilter: 'all',
   flipFilter: null,
   flipIndex: 0,
@@ -32,6 +33,7 @@ function showView(viewName) {
   });
   if (viewName === 'match') refreshMatchSelectors();
   if (viewName === 'mannequin') renderMannequin();
+  if (viewName === 'lookbook') renderLookbookView();
   if (viewName === 'flip' && !state.flipFilter) {
     const firstWithItems = UI.CATEGORIES.find((c) => state.items.some((i) => i.category === c.id));
     if (firstWithItems) selectFlipCategory(firstWithItems.id);
@@ -141,6 +143,43 @@ function refreshMatchSelectors() {
     STYLE_PROFILES.map((p) => `<option value="${p.id}">${UI.escapeHtml(p.label)}</option>`).join('');
 }
 
+// ---------------- Lookbook ----------------
+async function loadLookbook() {
+  const saved = await ClosetDB.getSetting('lookbook');
+  state.lookbook = Array.isArray(saved) ? saved : [];
+}
+
+async function persistLookbook() {
+  await ClosetDB.setSetting('lookbook', state.lookbook);
+}
+
+// Returns true if saved, false if the same set of pieces is already in the lookbook
+async function saveOutfit(pieces, name) {
+  const ids = pieces.map((p) => p.id).sort();
+  const key = ids.join('|');
+  if (state.lookbook.some((o) => [...o.itemIds].sort().join('|') === key)) return false;
+  state.lookbook.push({ id: makeId(), name: name || 'Saved outfit', itemIds: ids, savedAt: new Date().toISOString(), wornCount: 0 });
+  await persistLookbook();
+  return true;
+}
+
+function renderLookbookView() {
+  const byId = new Map(state.items.map((i) => [i.id, i]));
+  UI.renderLookbook(document.getElementById('lookbook-list'), state.lookbook, byId, {
+    onWear: async (outfit, present) => {
+      await logWear(present);
+      outfit.wornCount = (outfit.wornCount || 0) + 1;
+      await persistLookbook();
+      renderLookbookView();
+    },
+    onDelete: async (outfit) => {
+      state.lookbook = state.lookbook.filter((o) => o.id !== outfit.id);
+      await persistLookbook();
+      renderLookbookView();
+    },
+  });
+}
+
 // Log that a set of pieces was worn today (one wear per item per day)
 async function logWear(pieces) {
   const today = new Date().toISOString().slice(0, 10);
@@ -171,7 +210,7 @@ document.getElementById('btn-match-anchor').addEventListener('click', () => {
   }
   const profileId = document.getElementById('profile-select-anchor').value;
   const result = matchAroundItem(anchor, state.items, profileId);
-  UI.renderOutfitResult(resultsEl, result, 'anchor', goPreviewOnMannequin, logWear);
+  UI.renderOutfitResult(resultsEl, result, 'anchor', goPreviewOnMannequin, logWear, saveOutfit);
 });
 
 document.getElementById('btn-match-full').addEventListener('click', () => {
@@ -180,14 +219,14 @@ document.getElementById('btn-match-full').addEventListener('click', () => {
   const profileId = document.getElementById('profile-select-full').value;
   const resultsEl = document.getElementById('full-outfit-results');
   const result = composeFullOutfit(state.items, { occasion, weather, profileId });
-  UI.renderOutfitResult(resultsEl, result, 'full', goPreviewOnMannequin, logWear);
+  UI.renderOutfitResult(resultsEl, result, 'full', goPreviewOnMannequin, logWear, saveOutfit);
 });
 
 document.getElementById('btn-match-surprise').addEventListener('click', () => {
   const profileId = document.getElementById('profile-select-surprise').value;
   const resultsEl = document.getElementById('surprise-results');
   const result = randomOutfit(state.items, { profileId: profileId || null });
-  UI.renderOutfitResult(resultsEl, result, 'surprise', goPreviewOnMannequin, logWear);
+  UI.renderOutfitResult(resultsEl, result, 'surprise', goPreviewOnMannequin, logWear, saveOutfit);
 });
 
 // ---------------- Add item view ----------------
@@ -419,7 +458,9 @@ document.getElementById('btn-save-settings').addEventListener('click', async () 
 });
 
 document.getElementById('btn-export').addEventListener('click', () => {
-  const blob = new Blob([JSON.stringify(state.items, null, 2)], { type: 'application/json' });
+  // v2 backup: items + saved outfits (import still accepts the old items-only array)
+  const backup = { version: 2, items: state.items, lookbook: state.lookbook };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -433,8 +474,14 @@ document.getElementById('import-input').addEventListener('change', async () => {
   if (!file) return;
   const text = await file.text();
   try {
-    const imported = JSON.parse(text);
+    const parsed = JSON.parse(text);
+    const imported = Array.isArray(parsed) ? parsed : parsed?.items;
     if (!Array.isArray(imported)) throw new Error('Not a valid closet export.');
+    if (Array.isArray(parsed?.lookbook)) {
+      const known = new Set(state.lookbook.map((o) => o.id));
+      state.lookbook.push(...parsed.lookbook.filter((o) => o && o.id && Array.isArray(o.itemIds) && !known.has(o.id)));
+      await persistLookbook();
+    }
     for (const item of imported) {
       if (!item.id) item.id = makeId();
       await ClosetDB.addItem(item).catch(() => ClosetDB.updateItem(item));
@@ -506,6 +553,7 @@ if ('serviceWorker' in navigator) {
 // ---------------- Init ----------------
 (async function init() {
   await loadItems();
+  await loadLookbook();
   await loadSettings();
   await loadMannequinParams();
   refreshMatchSelectors();

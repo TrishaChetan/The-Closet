@@ -172,7 +172,7 @@ export function renderFlipCard(container, positionEl, item, index, total, onDele
   positionEl.textContent = `${index + 1} of ${total}`;
 }
 
-export function renderOutfitResult(container, result, kind, onPreviewMannequin, onWear) {
+export function renderOutfitResult(container, result, kind, onPreviewMannequin, onWear, onSave) {
   container.innerHTML = '';
   if (!result || (!result.picks || result.picks.length === 0)) {
     const p = document.createElement('p');
@@ -230,7 +230,80 @@ export function renderOutfitResult(container, result, kind, onPreviewMannequin, 
     card.appendChild(wearBtn);
   }
 
+  if (onSave) {
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'btn-secondary';
+    saveBtn.style.marginTop = '0.75rem';
+    saveBtn.style.marginLeft = '0.5rem';
+    saveBtn.textContent = '♡ Save to lookbook';
+    saveBtn.addEventListener('click', async () => {
+      saveBtn.disabled = true;
+      const pieces = Object.values(outfitResultToCategoryMap(result, kind));
+      const saved = await onSave(pieces, title.textContent);
+      saveBtn.textContent = saved ? '♥ Saved to lookbook' : '♥ Already in lookbook';
+    });
+    card.appendChild(saveBtn);
+  }
+
   container.appendChild(card);
+}
+
+// ---- lookbook ----
+export function renderLookbook(container, outfits, itemsById, { onWear, onDelete } = {}) {
+  container.innerHTML = '';
+  if (!outfits.length) {
+    container.innerHTML = '<p class="results-empty">No saved outfits yet. In Match Me, tap “♡ Save to lookbook” on a look you like.</p>';
+    return;
+  }
+  for (const outfit of [...outfits].sort((a, b) => b.savedAt.localeCompare(a.savedAt))) {
+    const pieces = outfit.itemIds.map((id) => itemsById.get(id));
+    const present = pieces.filter(Boolean);
+    const card = document.createElement('div');
+    card.className = 'outfit-result lookbook-card';
+    const title = document.createElement('h4');
+    title.textContent = outfit.name;
+    card.appendChild(title);
+    const meta = document.createElement('p');
+    meta.className = 'lookbook-meta';
+    const worn = outfit.wornCount ? ` · worn ${outfit.wornCount}×` : '';
+    meta.textContent = `Saved ${new Date(outfit.savedAt).toLocaleDateString()}${worn}`;
+    card.appendChild(meta);
+    const row = document.createElement('div');
+    row.className = 'outfit-result-items';
+    for (const item of pieces) {
+      if (item) {
+        row.appendChild(makeOutfitPiece(item, false));
+      } else {
+        const gone = document.createElement('div');
+        gone.className = 'outfit-piece is-missing';
+        gone.textContent = 'Removed from closet';
+        row.appendChild(gone);
+      }
+    }
+    card.appendChild(row);
+
+    const wear = document.createElement('button');
+    wear.className = 'btn-secondary';
+    wear.style.marginTop = '0.75rem';
+    wear.textContent = '👗 Wear this today';
+    wear.disabled = !present.length;
+    wear.addEventListener('click', async () => {
+      wear.disabled = true;
+      await onWear?.(outfit, present);
+      wear.textContent = '✓ Logged';
+    });
+    card.appendChild(wear);
+
+    const del = document.createElement('button');
+    del.className = 'btn-secondary';
+    del.style.marginTop = '0.75rem';
+    del.style.marginLeft = '0.5rem';
+    del.textContent = 'Remove';
+    del.addEventListener('click', () => onDelete?.(outfit));
+    card.appendChild(del);
+
+    container.appendChild(card);
+  }
 }
 
 function makeOutfitPiece(item, isAnchor) {

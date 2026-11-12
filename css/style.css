@@ -609,3 +609,8 @@ main#views { flex: 1; padding: 1.25rem; max-width: 960px; width: 100%; margin: 0
 .insight-list { margin: 0; padding-left: 1.2rem; }
 .insight-list span { color: var(--ink-soft); font-size: 0.85rem; }
 .insight-empty, .insight-tip { font-size: 0.85rem; color: var(--ink-soft); margin: 0.5rem 0 0; }
+
+/* ---- lookbook ---- */
+.lookbook-list { display: grid; gap: 1rem; }
+.lookbook-meta { font-size: 0.78rem; color: var(--ink-soft); margin: -0.25rem 0 0.6rem; }
+.outfit-piece.is-missing { font-style: italic; color: var(--ink-soft); opacity: 0.7; }
