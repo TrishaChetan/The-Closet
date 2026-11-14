@@ -36,6 +36,11 @@ export function renderCategoryRail(container, activeId, onSelect, { showForgotte
   container.appendChild(allChip);
 
   if (showForgotten) {
+    const laundryChip = makeChip('laundry', '🧺 Laundry', activeId === 'laundry');
+    laundryChip.title = 'Pieces in the wash — Match Me skips these';
+    laundryChip.addEventListener('click', () => onSelect('laundry'));
+    container.appendChild(laundryChip);
+
     const forgotChip = makeChip('forgotten', '💤 Forgotten', activeId === 'forgotten');
     forgotChip.title = `Items you haven't worn in ${FORGOTTEN_DAYS}+ days (or never)`;
     forgotChip.addEventListener('click', () => onSelect('forgotten'));
@@ -82,7 +87,7 @@ export function categoryLabel(id) {
   return found ? found.label : id;
 }
 
-export function renderClosetGrid(container, items, countEl, onDelete) {
+export function renderClosetGrid(container, items, countEl, onDelete, onLaundry) {
   container.innerHTML = '';
   countEl.textContent = items.length
     ? `${items.length} item${items.length === 1 ? '' : 's'} catalogued.`
@@ -97,13 +102,13 @@ export function renderClosetGrid(container, items, countEl, onDelete) {
   }
 
   for (const item of items) {
-    container.appendChild(makeClosetCard(item, onDelete));
+    container.appendChild(makeClosetCard(item, onDelete, onLaundry));
   }
 }
 
-function makeClosetCard(item, onDelete) {
+function makeClosetCard(item, onDelete, onLaundry) {
   const card = document.createElement('div');
-  card.className = 'closet-card';
+  card.className = 'closet-card' + (item.inLaundry ? ' is-in-laundry' : '');
   const photo = document.createElement('div');
   photo.className = 'closet-card-photo';
   if (item.photo) {
@@ -121,6 +126,26 @@ function makeClosetCard(item, onDelete) {
     if (confirm(`Delete "${item.name}" from your closet?`)) onDelete?.(item.id);
   });
   photo.appendChild(delBtn);
+
+  if (onLaundry) {
+    const washBtn = document.createElement('button');
+    washBtn.className = 'closet-card-laundry' + (item.inLaundry ? ' is-on' : '');
+    washBtn.setAttribute('aria-pressed', item.inLaundry ? 'true' : 'false');
+    washBtn.title = item.inLaundry ? 'Back from the wash' : 'Put in the laundry (hidden from Match Me)';
+    washBtn.setAttribute('aria-label', washBtn.title);
+    washBtn.textContent = '🧺';
+    washBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      onLaundry(item);
+    });
+    photo.appendChild(washBtn);
+  }
+  if (item.inLaundry) {
+    const tag = document.createElement('span');
+    tag.className = 'closet-card-laundry-tag';
+    tag.textContent = 'In the wash';
+    photo.appendChild(tag);
+  }
 
   const body = document.createElement('div');
   body.className = 'closet-card-body';

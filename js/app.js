@@ -67,6 +67,8 @@ function renderClosetView() {
   let filtered;
   if (state.closetFilter === 'all') {
     filtered = state.items;
+  } else if (state.closetFilter === 'laundry') {
+    filtered = state.items.filter((i) => i.inLaundry);
   } else if (state.closetFilter === 'forgotten') {
     // longest-unworn first, never-worn at the top
     filtered = state.items.filter(UI.isForgotten)
@@ -74,7 +76,7 @@ function renderClosetView() {
   } else {
     filtered = state.items.filter((i) => i.category === state.closetFilter);
   }
-  UI.renderClosetGrid(document.getElementById('closet-grid'), filtered, document.getElementById('closet-count'), deleteItemEverywhere);
+  UI.renderClosetGrid(document.getElementById('closet-grid'), filtered, document.getElementById('closet-count'), deleteItemEverywhere, toggleLaundry);
   UI.renderInsights(document.getElementById('closet-insights'), document.getElementById('insights-body'), state.items);
 }
 
@@ -180,6 +182,18 @@ function renderLookbookView() {
   });
 }
 
+// ---------------- Laundry ----------------
+// Pieces "in the wash" stay in the closet but aren't suggested by Match Me.
+function wearableItems() {
+  return state.items.filter((i) => !i.inLaundry);
+}
+
+async function toggleLaundry(item) {
+  item.inLaundry = !item.inLaundry;
+  await ClosetDB.updateItem(item);
+  renderClosetView();
+}
+
 // Log that a set of pieces was worn today (one wear per item per day)
 async function logWear(pieces) {
   const today = new Date().toISOString().slice(0, 10);
@@ -209,7 +223,7 @@ document.getElementById('btn-match-anchor').addEventListener('click', () => {
     return;
   }
   const profileId = document.getElementById('profile-select-anchor').value;
-  const result = matchAroundItem(anchor, state.items, profileId);
+  const result = matchAroundItem(anchor, wearableItems(), profileId);
   UI.renderOutfitResult(resultsEl, result, 'anchor', goPreviewOnMannequin, logWear, saveOutfit);
 });
 
@@ -218,14 +232,14 @@ document.getElementById('btn-match-full').addEventListener('click', () => {
   const weather = document.getElementById('weather-select').value;
   const profileId = document.getElementById('profile-select-full').value;
   const resultsEl = document.getElementById('full-outfit-results');
-  const result = composeFullOutfit(state.items, { occasion, weather, profileId });
+  const result = composeFullOutfit(wearableItems(), { occasion, weather, profileId });
   UI.renderOutfitResult(resultsEl, result, 'full', goPreviewOnMannequin, logWear, saveOutfit);
 });
 
 document.getElementById('btn-match-surprise').addEventListener('click', () => {
   const profileId = document.getElementById('profile-select-surprise').value;
   const resultsEl = document.getElementById('surprise-results');
-  const result = randomOutfit(state.items, { profileId: profileId || null });
+  const result = randomOutfit(wearableItems(), { profileId: profileId || null });
   UI.renderOutfitResult(resultsEl, result, 'surprise', goPreviewOnMannequin, logWear, saveOutfit);
 });
 

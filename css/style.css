@@ -614,3 +614,35 @@ main#views { flex: 1; padding: 1.25rem; max-width: 960px; width: 100%; margin: 0
 .lookbook-list { display: grid; gap: 1rem; }
 .lookbook-meta { font-size: 0.78rem; color: var(--ink-soft); margin: -0.25rem 0 0.6rem; }
 .outfit-piece.is-missing { font-style: italic; color: var(--ink-soft); opacity: 0.7; }
+
+/* ---- laundry ---- */
+.closet-card-laundry {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.1);
+  background: rgba(255,255,255,0.92);
+  font-size: 0.8rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.55;
+}
+.closet-card-laundry:hover, .closet-card-laundry.is-on { opacity: 1; }
+.closet-card-laundry.is-on { background: #dbeafe; border-color: #93c5fd; }
+.closet-card.is-in-laundry .closet-card-photo { filter: grayscale(0.7); opacity: 0.75; }
+.closet-card-laundry-tag {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(30, 64, 175, 0.85);
+  color: #fff;
+  font-size: 0.7rem;
+}
