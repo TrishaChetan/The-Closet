@@ -82,12 +82,48 @@ export function wearSummary(item) {
   return `Worn ${count}× · last ${when}`;
 }
 
+// ---- cost per wear ----
+const CURRENCY_KEY = 'closet_currency';
+
+export function getCurrency() {
+  try {
+    const saved = localStorage.getItem(CURRENCY_KEY);
+    if (saved) return saved;
+  } catch (e) { /* storage blocked */ }
+  return /-IN$/i.test(navigator.language || '') ? 'INR' : 'USD';
+}
+
+export function setCurrency(code) {
+  try { localStorage.setItem(CURRENCY_KEY, code); } catch (e) { /* ignore */ }
+}
+
+export function formatMoney(amount) {
+  const digits = amount < 100 && amount % 1 ? 2 : 0;
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: 'currency', currency: getCurrency(), maximumFractionDigits: digits, minimumFractionDigits: 0,
+    }).format(amount);
+  } catch (e) {
+    return amount.toFixed(digits);
+  }
+}
+
+export function hasPrice(item) {
+  return typeof item.price === 'number' && item.price > 0;
+}
+
+// Price divided by wears so far; an unworn piece costs its full price "per wear".
+export function costPerWear(item) {
+  if (!hasPrice(item)) return null;
+  return item.price / Math.max(1, item.wearCount || 0);
+}
+
 export function categoryLabel(id) {
   const found = CATEGORIES.find((c) => c.id === id);
   return found ? found.label : id;
 }
 
-export function renderClosetGrid(container, items, countEl, onDelete, onLaundry) {
+export function renderClosetGrid(container, items, countEl, onDelete, onLaundry, onPrice) {
   container.innerHTML = '';
   countEl.textContent = items.length
     ? `${items.length} item${items.length === 1 ? '' : 's'} catalogued.`
@@ -102,11 +138,11 @@ export function renderClosetGrid(container, items, countEl, onDelete, onLaundry)
   }
 
   for (const item of items) {
-    container.appendChild(makeClosetCard(item, onDelete, onLaundry));
+    container.appendChild(makeClosetCard(item, onDelete, onLaundry, onPrice));
   }
 }
 
-function makeClosetCard(item, onDelete, onLaundry) {
+function makeClosetCard(item, onDelete, onLaundry, onPrice) {
   const card = document.createElement('div');
   card.className = 'closet-card' + (item.inLaundry ? ' is-in-laundry' : '');
   const photo = document.createElement('div');
@@ -157,6 +193,22 @@ function makeClosetCard(item, onDelete, onLaundry) {
     </div>
     <div class="closet-card-wear${isForgotten(item) ? ' is-forgotten' : ''}">${wearSummary(item)}</div>
   `;
+  if (hasPrice(item) || onPrice) {
+    const cpw = document.createElement(onPrice ? 'button' : 'div');
+    cpw.className = 'closet-card-cpw';
+    if (hasPrice(item)) {
+      cpw.textContent = `${formatMoney(costPerWear(item))} per wear`;
+      cpw.title = `Paid ${formatMoney(item.price)} · tap to change`;
+    } else {
+      cpw.textContent = '💰 Add price';
+      cpw.title = 'Add what it cost to track cost-per-wear';
+    }
+    if (onPrice) {
+      cpw.type = 'button';
+      cpw.addEventListener('click', (e) => { e.stopPropagation(); onPrice(item); });
+    }
+    body.appendChild(cpw);
+  }
   card.appendChild(photo);
   card.appendChild(body);
   return card;
@@ -387,7 +439,13 @@ export function computeInsights(items) {
       neglected = { label: cat.label, share, count: inCat.length };
     }
   }
-  return { total, wears, never, recent, mostWorn, palette, neglected };
+  const priced = items.filter(hasPrice);
+  const value = priced.reduce((sum, i) => sum + i.price, 0);
+  const unwornValue = priced.filter((i) => !i.wearCount).reduce((sum, i) => sum + i.price, 0);
+  const bestValue = priced.filter((i) => i.wearCount)
+    .sort((a, b) => costPerWear(a) - costPerWear(b))
+    .slice(0, 3);
+  return { total, wears, never, recent, mostWorn, palette, neglected, priced: priced.length, value, unwornValue, bestValue };
 }
 
 export function renderInsights(details, body, items) {
@@ -422,6 +480,14 @@ export function renderInsights(details, body, items) {
         ? `<ol class="insight-list">${s.mostWorn.map((i) => `<li>${escapeHtml(i.name || 'Untitled')} <span>${i.wearCount}×</span></li>`).join('')}</ol>`
         : '<p class="insight-empty">Nothing logged yet — tap “I wore this today” on an outfit in Match Me.</p>'}
     </div>
+    ${s.priced ? `<div class="insight-section">
+      <h4>Cost per wear</h4>
+      <p class="insight-empty">${formatMoney(s.value)} across ${s.priced} priced piece${s.priced === 1 ? '' : 's'}.</p>
+      ${s.bestValue.length
+        ? `<ol class="insight-list">${s.bestValue.map((i) => `<li>${escapeHtml(i.name || 'Untitled')} <span>${formatMoney(costPerWear(i))}/wear</span></li>`).join('')}</ol>`
+        : ''}
+      ${s.unwornValue ? `<p class="insight-tip">🏷️ <b>${formatMoney(s.unwornValue)}</b> of clothes haven't been worn yet — Match Me can build looks around them.</p>` : ''}
+    </div>` : ''}
     ${s.neglected ? `<p class="insight-tip">💤 <b>${escapeHtml(s.neglected.label)}</b> is your most neglected category —
       ${Math.round(s.neglected.share * 100)}% of its ${s.neglected.count} pieces haven't been worn in ${FORGOTTEN_DAYS}+ days.</p>` : ''}
   `;

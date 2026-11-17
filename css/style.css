@@ -536,6 +536,22 @@ main#views { flex: 1; padding: 1.25rem; max-width: 960px; width: 100%; margin: 0
 .closet-card-wear.is-forgotten {
   color: #b5651d;
 }
+.closet-card-cpw {
+  display: block;
+  margin-top: 0.2rem;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  text-align: left;
+  cursor: pointer;
+}
+button.closet-card-cpw:hover { text-decoration: underline; }
+.price-row { display: flex; gap: 0.5rem; }
+.price-row .price-currency { flex: 0 0 7.5rem; }
+.price-row .text-input { flex: 1; min-width: 0; }
 
 /* ---- closet insights ---- */
 .insights {

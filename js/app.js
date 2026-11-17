@@ -76,7 +76,7 @@ function renderClosetView() {
   } else {
     filtered = state.items.filter((i) => i.category === state.closetFilter);
   }
-  UI.renderClosetGrid(document.getElementById('closet-grid'), filtered, document.getElementById('closet-count'), deleteItemEverywhere, toggleLaundry);
+  UI.renderClosetGrid(document.getElementById('closet-grid'), filtered, document.getElementById('closet-count'), deleteItemEverywhere, toggleLaundry, editPrice);
   UI.renderInsights(document.getElementById('closet-insights'), document.getElementById('insights-body'), state.items);
 }
 
@@ -186,6 +186,21 @@ function renderLookbookView() {
 // Pieces "in the wash" stay in the closet but aren't suggested by Match Me.
 function wearableItems() {
   return state.items.filter((i) => !i.inLaundry);
+}
+
+// ---------------- Cost per wear ----------------
+function parsePrice(raw) {
+  const n = parseFloat(String(raw).replace(/[^0-9.]/g, ''));
+  return Number.isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : null;
+}
+
+async function editPrice(item) {
+  const answer = prompt(`What did "${item.name}" cost? (${UI.getCurrency()}, leave empty to clear)`, item.price ?? '');
+  if (answer === null) return;
+  const price = parsePrice(answer);
+  if (price) item.price = price; else delete item.price;
+  await ClosetDB.updateItem(item);
+  renderClosetView();
 }
 
 async function toggleLaundry(item) {
@@ -366,6 +381,7 @@ document.getElementById('add-item-form').addEventListener('submit', async (e) =>
   const category = document.getElementById('item-category').value;
   const formality = document.getElementById('item-formality').value;
   const tags = document.getElementById('item-tags').value.split(',').map((t) => t.trim()).filter(Boolean);
+  const price = parsePrice(document.getElementById('item-price').value);
 
   if (!name || !category) return;
 
@@ -379,6 +395,7 @@ document.getElementById('add-item-form').addEventListener('submit', async (e) =>
     color: state.pendingPhoto?.color || null,
     createdAt: Date.now()
   };
+  if (price) item.price = price;
 
   await ClosetDB.addItem(item);
   state.items.push(item);
@@ -574,3 +591,13 @@ if ('serviceWorker' in navigator) {
   renderMannequin();
   maybeOfferAiStylist();
 })();
+
+// Currency for prices — remembered on this device
+const currencySelect = document.getElementById('item-currency');
+if (currencySelect) {
+  currencySelect.value = UI.getCurrency();
+  currencySelect.addEventListener('change', () => {
+    UI.setCurrency(currencySelect.value);
+    renderClosetView();
+  });
+}

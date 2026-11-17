@@ -19,6 +19,7 @@ If you own a lot of clothes, it's easy to forget half of what's in your closet �
 - 👗 **Wear tracking** — tap *I wore this today* on any suggested outfit; each item shows how often and how recently you wore it
 - 🧺 **Laundry basket** — tap 🧺 on a card to mark it as in the wash; Match Me won't suggest it until you tap again, and the 🧺 Laundry filter shows what's waiting
 - ♡ **Lookbook** — save outfits you like from Match Me, then wear them again in one tap; saved outfits are included in the backup export
+- 💰 **Cost per wear** — optionally note what a piece cost (₹/$/€/£); each card shows price ÷ wears, and Insights shows your best-value pieces and how much is sitting unworn
 - 📊 **Closet insights** — wardrobe size, how much you actually wear, your most-worn pieces, a colour-palette breakdown and your most neglected category
 - 💤 **Forgotten filter** — surfaces pieces you haven't worn in 30+ days (or ever), so nothing gets lost at the back of the closet
 - 🎯 **Match Me**, three ways:

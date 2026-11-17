@@ -302,6 +302,17 @@
           </div>
         </div>
 
+        <label class="field-label" for="item-price">What it cost <span class="field-label-hint">(optional — used for cost-per-wear)</span></label>
+        <div class="price-row">
+          <select id="item-currency" class="select-input price-currency" aria-label="Currency">
+            <option value="INR">₹ INR</option>
+            <option value="USD">$ USD</option>
+            <option value="EUR">€ EUR</option>
+            <option value="GBP">£ GBP</option>
+          </select>
+          <input type="number" id="item-price" class="text-input" min="0" step="any" inputmode="decimal" placeholder="e.g. 1999">
+        </div>
+
         <label class="field-label" for="item-tags">Tags <span class="field-label-hint">(comma separated, optional)</span></label>
         <input type="text" id="item-tags" class="text-input" placeholder="e.g. plaid, wool, monogrammed">
 
