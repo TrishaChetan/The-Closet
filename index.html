@@ -29,6 +29,7 @@
       <button class="ribbon-tab" data-view="flip">Flip Through</button>
       <button class="ribbon-tab" data-view="match">Match Me</button>
       <button class="ribbon-tab" data-view="lookbook">Lookbook</button>
+      <button class="ribbon-tab" data-view="pack">Pack</button>
       <button class="ribbon-tab" data-view="mannequin">Mannequin</button>
       <button class="ribbon-tab" data-view="add">Add Item</button>
       <button class="ribbon-tab" data-view="settings">Settings</button>
@@ -327,6 +328,35 @@
         <p class="view-sub">Outfits you saved from Match Me — ready to wear again.</p>
       </div>
       <div id="lookbook-list" class="lookbook-list"><!-- populated by ui.js --></div>
+    </section>
+
+    <!-- ===================== PACK VIEW ===================== -->
+    <section id="view-pack" class="view" aria-labelledby="pack-heading">
+      <div class="view-head">
+        <h2 id="pack-heading">Pack for a trip</h2>
+        <p class="view-sub">The fewest pieces that still give you a different, matching outfit every day.</p>
+      </div>
+      <div class="form-grid">
+        <div>
+          <label class="field-label" for="pack-days">Days</label>
+          <input id="pack-days" class="text-input" type="number" min="1" max="30" value="5" inputmode="numeric">
+        </div>
+        <div>
+          <label class="field-label" for="pack-dresscode">Dress code</label>
+          <select id="pack-dresscode" class="select-input">
+            <option value="any">Mixed / anything</option>
+            <option value="casual">Casual (holiday)</option>
+            <option value="smart-casual">Smart-casual (work trip)</option>
+            <option value="formal">Formal (wedding, event)</option>
+          </select>
+        </div>
+        <div>
+          <label class="field-label" for="profile-select-pack">Style lens</label>
+          <select id="profile-select-pack" class="select-input"></select>
+        </div>
+      </div>
+      <button class="btn-primary" id="btn-pack">Plan my suitcase</button>
+      <div id="pack-results" class="results-area"></div>
     </section>
 
     <!-- ===================== SETTINGS VIEW ===================== -->

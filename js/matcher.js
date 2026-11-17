@@ -6,11 +6,11 @@ import { isNeutral, hueHarmonyScore, profileHueBonus, getProfile } from './style
 
 const FORMALITY_RANK = { casual: 0, 'smart-casual': 1, formal: 2 };
 
-const TOP_LIKE = ['tops', 'hoodies', 'activewear'];
-const OUTER_LAYER = ['blazers', 'jackets'];
-const BOTTOM_LIKE = ['jeans', 'pants', 'shorts', 'skirts'];
+export const TOP_LIKE = ['tops', 'hoodies', 'activewear'];
+export const OUTER_LAYER = ['blazers', 'jackets'];
+export const BOTTOM_LIKE = ['jeans', 'pants', 'shorts', 'skirts'];
 // One-piece items stand in for a top + bottom combo at once.
-const DRESS_LIKE = ['dresses-short', 'dresses-midi', 'dresses-long', 'gowns', 'jumpsuits'];
+export const DRESS_LIKE = ['dresses-short', 'dresses-midi', 'dresses-long', 'gowns', 'jumpsuits'];
 const ACCESSORY_SLOTS = ['footwear', 'hats', 'purses', 'belts', 'glasses', 'watch', 'rings', 'necklace', 'earrings', 'scarves'];
 const ALL_SLOTS = [...TOP_LIKE, ...DRESS_LIKE, ...OUTER_LAYER, ...BOTTOM_LIKE, ...ACCESSORY_SLOTS];
 
@@ -25,7 +25,7 @@ function categoriesConflict(catA, catB) {
   return false;
 }
 
-function scorePair(itemA, itemB, profile) {
+export function scorePair(itemA, itemB, profile) {
   let score = 0;
 
   if (itemA.color && itemB.color) {

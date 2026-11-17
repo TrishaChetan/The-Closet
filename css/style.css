@@ -662,3 +662,13 @@ button.closet-card-cpw:hover { text-decoration: underline; }
   color: #fff;
   font-size: 0.7rem;
 }
+
+/* ---- pack for a trip ---- */
+.pack-summary { font-weight: 600; margin: 1rem 0 0.25rem; }
+.pack-note { font-size: 0.85rem; color: var(--ink-soft); margin: 0 0 0.75rem; }
+.pack-checklist { list-style: none; padding: 0; margin: 0 0 1rem; display: grid; gap: 0.35rem; }
+.pack-checklist label { display: flex; align-items: center; gap: 0.6rem; cursor: pointer; }
+.pack-checklist img { width: 36px; height: 36px; object-fit: cover; border-radius: 6px; }
+.pack-checklist input:checked ~ span { text-decoration: line-through; color: var(--ink-soft); }
+.pack-day { margin-bottom: 0.75rem; }
+.pack-day h4 { margin: 0 0 0.35rem; font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; color: var(--ink-soft); }

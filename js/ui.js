@@ -383,7 +383,7 @@ export function renderLookbook(container, outfits, itemsById, { onWear, onDelete
   }
 }
 
-function makeOutfitPiece(item, isAnchor) {
+export function makeOutfitPiece(item, isAnchor) {
   const el = document.createElement('div');
   el.className = 'outfit-piece';
   el.innerHTML = `

@@ -8,6 +8,7 @@ import { STYLE_PROFILES } from './styleProfiles.js';
 import { matchAroundItem, composeFullOutfit, randomOutfit } from './matcher.js';
 import { getFreeformOutfitIdea, summarizeClosetForPrompt } from './ai.js';
 import { buildMannequinSVG } from './mannequin.js';
+import { planTrip, packingListText } from './packing.js';
 import * as UI from './ui.js';
 
 const state = {
@@ -140,6 +141,12 @@ function refreshMatchSelectors() {
     sel.innerHTML = STYLE_PROFILES.map((p) => `<option value="${p.id}">${UI.escapeHtml(p.label)}</option>`).join('');
   }
 
+  const packSel = document.getElementById('profile-select-pack');
+  if (packSel) {
+    packSel.innerHTML = '<option value="">No particular theme</option>' +
+      STYLE_PROFILES.map((p) => `<option value="${p.id}">${UI.escapeHtml(p.label)}</option>`).join('');
+  }
+
   const surpriseSel = document.getElementById('profile-select-surprise');
   surpriseSel.innerHTML = '<option value="">No particular theme — just surprise me</option>' +
     STYLE_PROFILES.map((p) => `<option value="${p.id}">${UI.escapeHtml(p.label)}</option>`).join('');
@@ -181,6 +188,65 @@ function renderLookbookView() {
     },
   });
 }
+
+// ---------------- Pack for a trip ----------------
+function renderPackResult() {
+  const out = document.getElementById('pack-results');
+  const days = Number(document.getElementById('pack-days').value) || 1;
+  const result = planTrip(wearableItems(), {
+    days,
+    dressCode: document.getElementById('pack-dresscode').value,
+    profileId: document.getElementById('profile-select-pack').value || null,
+  });
+  out.innerHTML = '';
+  if (!result.pieces.length) {
+    out.innerHTML = `<p class="results-empty">${UI.escapeHtml(result.note)}</p>`;
+    return;
+  }
+  const clothes = result.pieces.length;
+  const summary = document.createElement('p');
+  summary.className = 'pack-summary';
+  summary.textContent = `${clothes} piece${clothes === 1 ? '' : 's'} → ${result.outfitCount} outfit${result.outfitCount === 1 ? '' : 's'} for ${result.plan.length} day${result.plan.length === 1 ? '' : 's'}`;
+  out.appendChild(summary);
+  if (result.note) {
+    const note = document.createElement('p');
+    note.className = 'pack-note';
+    note.textContent = result.note;
+    out.appendChild(note);
+  }
+  const list = document.createElement('ul');
+  list.className = 'pack-checklist';
+  for (const item of result.pieces) {
+    const li = document.createElement('li');
+    li.innerHTML = `<label><input type="checkbox">${item.photo ? `<img src="${item.photo}" alt="">` : ''}<span>${UI.escapeHtml(item.name)} <small>· ${UI.escapeHtml(UI.categoryLabel(item.category))}</small></span></label>`;
+    list.appendChild(li);
+  }
+  out.appendChild(list);
+  for (const d of result.plan) {
+    const day = document.createElement('div');
+    day.className = 'pack-day';
+    day.innerHTML = `<h4>Day ${d.day}</h4>`;
+    const row = document.createElement('div');
+    row.className = 'outfit-result-items';
+    d.pieces.forEach((p) => row.appendChild(UI.makeOutfitPiece(p, false)));
+    day.appendChild(row);
+    out.appendChild(day);
+  }
+  const copy = document.createElement('button');
+  copy.className = 'btn-secondary';
+  copy.textContent = '📋 Copy packing list';
+  copy.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(packingListText(result, result.plan.length));
+      copy.textContent = '✓ Copied';
+    } catch (e) {
+      copy.textContent = 'Copy failed — select the list instead';
+    }
+  });
+  out.appendChild(copy);
+}
+
+document.getElementById('btn-pack')?.addEventListener('click', renderPackResult);
 
 // ---------------- Laundry ----------------
 // Pieces "in the wash" stay in the closet but aren't suggested by Match Me.
