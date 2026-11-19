@@ -672,3 +672,13 @@ button.closet-card-cpw:hover { text-decoration: underline; }
 .pack-checklist input:checked ~ span { text-decoration: line-through; color: var(--ink-soft); }
 .pack-day { margin-bottom: 0.75rem; }
 .pack-day h4 { margin: 0 0 0.35rem; font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; color: var(--ink-soft); }
+
+/* ---- week planner ---- */
+.week-plan { display: grid; gap: 0.75rem; margin-top: 1rem; }
+.week-day { border: 1px solid var(--line, rgba(0,0,0,0.12)); border-radius: 12px; padding: 0.75rem; }
+.week-day.is-today { border-color: var(--ink, #222); box-shadow: 0 0 0 1px var(--ink, #222) inset; }
+.week-day.is-worn { opacity: 0.6; }
+.week-day-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.5rem; }
+.week-day-head h4 { margin: 0; font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase; }
+.week-day-actions { display: flex; gap: 0.4rem; }
+.week-day-actions button { font-size: 0.75rem; padding: 0.25rem 0.6rem; }

@@ -20,6 +20,7 @@ If you own a lot of clothes, it's easy to forget half of what's in your closet �
 - 🧺 **Laundry basket** — tap 🧺 on a card to mark it as in the wash; Match Me won't suggest it until you tap again, and the 🧺 Laundry filter shows what's waiting
 - ♡ **Lookbook** — save outfits you like from Match Me, then wear them again in one tap; saved outfits are included in the backup export
 - 🧳 **Pack for a trip** — enter the number of days and a dress code, and it picks the fewest tops, bottoms and dresses that still give a different, colour-matched outfit each day, adds the best shoes and a layer, and lays out a day-by-day plan that never repeats a piece two days running. Tick items off as you pack, or copy the list
+- 📅 **Plan my week** — one tap plans a matching outfit for each of the next 7 days. No piece is worn two days running, pieces are spread across the week, things you wore yesterday are avoided, and anything you haven't worn in 30+ days gets an outing. Swap any day you don't like; on the day, tap *Wore it ✓* to log the wear. The plan is remembered on this device
 - 💰 **Cost per wear** — optionally note what a piece cost (₹/$/€/£); each card shows price ÷ wears, and Insights shows your best-value pieces and how much is sitting unworn
 - 📊 **Closet insights** — wardrobe size, how much you actually wear, your most-worn pieces, a colour-palette breakdown and your most neglected category
 - 💤 **Forgotten filter** — surfaces pieces you haven't worn in 30+ days (or ever), so nothing gets lost at the back of the closet

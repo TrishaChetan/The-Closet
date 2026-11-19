@@ -9,6 +9,7 @@ import { matchAroundItem, composeFullOutfit, randomOutfit } from './matcher.js';
 import { getFreeformOutfitIdea, summarizeClosetForPrompt } from './ai.js';
 import { buildMannequinSVG } from './mannequin.js';
 import { planTrip, packingListText } from './packing.js';
+import * as Week from './weekplan.js';
 import * as UI from './ui.js';
 
 const state = {
@@ -35,6 +36,7 @@ function showView(viewName) {
   if (viewName === 'match') refreshMatchSelectors();
   if (viewName === 'mannequin') renderMannequin();
   if (viewName === 'lookbook') renderLookbookView();
+  if (viewName === 'week') renderWeekPlan();
   if (viewName === 'flip' && !state.flipFilter) {
     const firstWithItems = UI.CATEGORIES.find((c) => state.items.some((i) => i.category === c.id));
     if (firstWithItems) selectFlipCategory(firstWithItems.id);
@@ -188,6 +190,53 @@ function renderLookbookView() {
     },
   });
 }
+
+// ---------------- Week planner ----------------
+let weekPlan = null;
+
+function renderWeekPlan() {
+  const out = document.getElementById('week-plan');
+  if (!out) return;
+  if (!weekPlan) weekPlan = Week.cleanPlan(Week.loadPlan(), state.items);
+  out.innerHTML = '';
+  if (!weekPlan || !weekPlan.days?.length) {
+    out.innerHTML = `<p class="results-empty">${UI.escapeHtml(weekPlan?.note || 'No plan yet — press the button to plan your week.')}</p>`;
+    return;
+  }
+  const today = Week.isoDate(new Date());
+  const byId = new Map(state.items.map((i) => [i.id, i]));
+  weekPlan.days.forEach((day, index) => {
+    if (day.date < today) return;  // past days drop off
+    const card = document.createElement('div');
+    card.className = 'week-day' + (day.date === today ? ' is-today' : '') + (day.worn ? ' is-worn' : '');
+    const label = new Date(day.date + 'T00:00:00').toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'short' });
+    card.innerHTML = `<div class="week-day-head"><h4>${UI.escapeHtml(label)}${day.date === today ? ' · today' : ''}</h4>
+      <div class="week-day-actions"><button class="btn-secondary" data-act="swap">🔄 Swap</button>
+      ${day.date === today ? `<button class="btn-secondary" data-act="wear" ${day.worn ? 'disabled' : ''}>${day.worn ? 'Worn ✓' : 'Wore it ✓'}</button>` : ''}</div></div>`;
+    const row = document.createElement('div');
+    row.className = 'outfit-result-items';
+    day.ids.map((id) => byId.get(id)).filter(Boolean).forEach((p) => row.appendChild(UI.makeOutfitPiece(p, false)));
+    card.appendChild(row);
+    card.querySelector('[data-act="swap"]').addEventListener('click', () => {
+      if (!Week.swapDay(weekPlan, index, wearableItems())) return;
+      Week.savePlan(weekPlan);
+      renderWeekPlan();
+    });
+    card.querySelector('[data-act="wear"]')?.addEventListener('click', async () => {
+      await logWear(day.ids.map((id) => byId.get(id)).filter(Boolean));
+      day.worn = true;
+      Week.savePlan(weekPlan);
+      renderWeekPlan();
+    });
+    out.appendChild(card);
+  });
+}
+
+document.getElementById('btn-plan-week')?.addEventListener('click', () => {
+  weekPlan = Week.planWeek(wearableItems(), { start: new Date() });
+  Week.savePlan(weekPlan);
+  renderWeekPlan();
+});
 
 // ---------------- Pack for a trip ----------------
 function renderPackResult() {

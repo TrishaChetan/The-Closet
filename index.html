@@ -29,6 +29,7 @@
       <button class="ribbon-tab" data-view="flip">Flip Through</button>
       <button class="ribbon-tab" data-view="match">Match Me</button>
       <button class="ribbon-tab" data-view="lookbook">Lookbook</button>
+      <button class="ribbon-tab" data-view="week">Week</button>
       <button class="ribbon-tab" data-view="pack">Pack</button>
       <button class="ribbon-tab" data-view="mannequin">Mannequin</button>
       <button class="ribbon-tab" data-view="add">Add Item</button>
@@ -328,6 +329,16 @@
         <p class="view-sub">Outfits you saved from Match Me — ready to wear again.</p>
       </div>
       <div id="lookbook-list" class="lookbook-list"><!-- populated by ui.js --></div>
+    </section>
+
+    <!-- ===================== WEEK VIEW ===================== -->
+    <section id="view-week" class="view" aria-labelledby="week-heading">
+      <div class="view-head">
+        <h2 id="week-heading">Plan my week</h2>
+        <p class="view-sub">A matching outfit for every day — nothing worn two days running, and forgotten pieces get an outing.</p>
+      </div>
+      <button class="btn-primary" id="btn-plan-week">Plan the next 7 days</button>
+      <div id="week-plan" class="week-plan"></div>
     </section>
 
     <!-- ===================== PACK VIEW ===================== -->
